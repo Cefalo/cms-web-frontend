@@ -1,15 +1,18 @@
-import { createStore, combineReducers, applyMiddleware } from 'redux';
-import thunk from 'redux-thunk';
-import logger from 'redux-logger';
+import { createStore, combineReducers, applyMiddleware, compose } from 'redux'
+import thunk from 'redux-thunk'
+import logger from 'redux-logger'
 
-import { User } from './user';
+import { User } from './user'
 
 export const ConfigureStore = () => {
-    const store = createStore(
-        combineReducers({
-            user: User
-        }),
-        applyMiddleware(thunk, logger)
-    );
-    return store;
-};
+  const store = createStore(
+    combineReducers({
+      user: User,
+    }),
+    compose(
+      applyMiddleware(thunk, logger),
+      window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__(),
+    ),
+  )
+  return store
+}
