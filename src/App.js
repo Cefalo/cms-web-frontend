@@ -1,15 +1,20 @@
-import React,{Component} from 'react';
-import Main from './components/MainComponent';
-import {BrowserRouter} from 'react-router-dom';
+import React, { Component } from 'react'
+import Main from './components/MainComponent'
+import { BrowserRouter } from 'react-router-dom'
 
-import {Provider} from 'react-redux';
-import {ConfigureStore} from './redux/configureStore';
+import { Provider } from 'react-redux'
+import { compose, createStore } from 'redux'
+import reducers from './reducers'
+import middlewares from './middlewares'
 
-const store =ConfigureStore();
+const store = createStore(reducers, compose(
+  middlewares,
+  window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__(),
+))
 
 class App extends Component {
 
-  render(){
+  render () {
     return (
       <Provider store={store}>
         <BrowserRouter>
@@ -18,9 +23,9 @@ class App extends Component {
           </div>
         </BrowserRouter>
       </Provider>
-    );
+    )
   }
 
 }
 
-export default App;
+export default App
