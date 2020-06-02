@@ -16,10 +16,9 @@ import { green } from '@material-ui/core/colors'
 import Container from '@material-ui/core/Container'
 import CircularProgress from '@material-ui/core/CircularProgress'
 import { connect } from 'react-redux'
-import { postUser } from '../redux/ActionCreators'
-import Snackbar from '@material-ui/core/Snackbar'
+import { handleSignIn } from '../actions/userAction'
 import Alert from '@material-ui/lab/Alert'
-import { Formik, Form, Field, ErrorMessage } from 'formik'
+import { Formik } from 'formik'
 import * as Yup from 'yup'
 import { Redirect } from 'react-router-dom'
 
@@ -79,18 +78,18 @@ class SignIn extends Component {
 
   processSubmit (values) {
     const { dispatch } = this.props
-    dispatch(postUser(values))
+    dispatch(handleSignIn(values))
   }
 
   render () {
     const { classes } = this.props
-    const { isLoading, errMess, jwt_tocken } = this.props.user
+    const { isLoading, errMess, jwt_token } = this.props.user
     const signUpSchema = Yup.object().shape({
       email: Yup.string().email().required('Required'),
       password: Yup.string().required('Required'),
     })
 
-    if (jwt_tocken) {
+    if (jwt_token) {
       return (
         <Redirect to={'/home'}/>
       )
