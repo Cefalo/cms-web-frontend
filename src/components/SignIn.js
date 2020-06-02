@@ -1,4 +1,4 @@
-import React, { Component } from 'react'
+import React, { Component, useState } from 'react'
 import { compose } from 'redux'
 import Avatar from '@material-ui/core/Avatar'
 import Button from '@material-ui/core/Button'
@@ -17,8 +17,11 @@ import Container from '@material-ui/core/Container'
 import CircularProgress from '@material-ui/core/CircularProgress'
 import { connect } from 'react-redux'
 import { postUser } from '../redux/ActionCreators'
-
-//import { postUser } from '../redux/ActionCreators'
+import Snackbar from '@material-ui/core/Snackbar'
+import Alert from '@material-ui/lab/Alert'
+import { Formik, Form, Field, ErrorMessage } from 'formik'
+import * as Yup from 'yup'
+import { Redirect } from 'react-router-dom'
 
 function Copyright () {
   return (
@@ -69,40 +72,29 @@ class SignIn extends Component {
 
   constructor (props) {
     super(props)
-
     this.state = {
-      loading: false,
-      email: '',
-      password: '',
-      remember: '',
+      open: true,
     }
-
-    this.handleChange = this.handleChange.bind(this)
-    this.handleSubmit = this.handleSubmit.bind(this)
   }
 
-  handleChange (event) {
-    const target = event.target
-    const value = target.type === 'checkbox' ? target.checked : target.value
-    const name = target.name
-
-    this.setState({
-      [name]: value,
-    })
-  }
-
-  handleSubmit (event) {
-    event.preventDefault();
-
-    const values = { email: this.state.email, password: this.state.password }
+  processSubmit (values) {
     const { dispatch } = this.props
     dispatch(postUser(values))
   }
 
   render () {
     const { classes } = this.props
-    const { isLoading } = this.props.user
-    console.log(this.props)
+    const { isLoading, errMess, jwt_tocken } = this.props.user
+    const signUpSchema = Yup.object().shape({
+      email: Yup.string().email().required('Required'),
+      password: Yup.string().required('Required'),
+    })
+
+    if (jwt_tocken) {
+      return (
+        <Redirect to={'/home'}/>
+      )
+    }
     return (
       <Container component="main" maxWidth="xs">
         <CssBaseline/>
@@ -111,61 +103,95 @@ class SignIn extends Component {
             <LockOutlinedIcon/>
           </Avatar>
           <Typography component="h1" variant="h5">Sign in</Typography>
-          <form onSubmit={this.handleSubmit} className={classes.form} noValidate>
-            <TextField
-              onChange={this.handleChange}
-              variant="outlined"
-              margin="normal"
-              required
-              fullWidth
-              id="email"
-              label="Email Address"
-              name="email"
-              autoComplete="email"
-              autoFocus
-            />
-            <TextField
-              onChange={this.handleChange}
-              variant="outlined"
-              margin="normal"
-              required
-              fullWidth
-              name="password"
-              label="Password"
-              type="password"
-              id="password"
-              autoComplete="current-password"
-            />
-            <FormControlLabel
-              control={<Checkbox value="remember" name="remember" onChange={this.handleChange} color="primary"/>}
-              label="Remember me"
-            />
-            <div className={classes.wrapper}>
-              <Button
-                type="submit"
-                fullWidth
-                variant="contained"
-                color="primary"
-                className={classes.submit}
-                disabled={isLoading}
-              >
-                Sign In
-              </Button>
-              {isLoading && <CircularProgress size={24} className={classes.buttonProgress}/>}
-            </div>
-            <Grid container>
-              <Grid item xs>
-                <Link href="#" variant="body2">
-                  Forgot password?
-                </Link>
-              </Grid>
-              <Grid item>
-                <Link href="#" variant="body2">
-                  {'Don\'t have an account? Sign Up'}
-                </Link>
-              </Grid>
-            </Grid>
-          </form>
+          <Formik
+            initialValues={{ loading: false, email: '', password: '', remember: '' }}
+            validationSchema={signUpSchema}
+            onSubmit={(values) => this.processSubmit(values)}
+          >
+            {
+              ({
+                values,
+                errors,
+                touched,
+                handleChange,
+                handleBlur,
+                handleSubmit,
+                isSubmitting,
+              }) => (
+                <form className={classes.form} onSubmit={handleSubmit} noValidate>
+                  <TextField
+                    error={errors.email && touched.email}
+                    helperText={(errors.email && touched.email) && errors.email}
+                    onBlur={handleBlur}
+                    onChange={handleChange}
+                    variant="outlined"
+                    margin="normal"
+                    required
+                    fullWidth
+                    id="email"
+                    label="Email Address"
+                    name="email"
+                    value={values.email}
+                    autoComplete="email"
+                    autoFocus
+                  />
+                  <TextField
+                    error={errors.password && touched.password}
+                    helperText={(errors.password && touched.password) && errors.password}
+                    onBlur={handleBlur}
+                    onChange={handleChange}
+                    variant="outlined"
+                    margin="normal"
+                    required
+                    fullWidth
+                    name="password"
+                    value={values.password}
+                    label="Password"
+                    type="password"
+                    id="password"
+                    autoComplete="current-password"
+                  />
+                  <FormControlLabel
+                    control={<Checkbox value="remember" name="remember" onChange={handleChange} color="primary"/>}
+                    label="Remember me"
+                  />
+                  <div className={classes.wrapper}>
+                    {
+                      errMess && this.state.open && (
+                        <Alert severity={'error'} onClose={() => {this.setState({ open: false })}}>This is a success
+                          alert — check it
+                          out!</Alert>
+                      )
+
+                    }
+                    <Button
+                      type="submit"
+                      fullWidth
+                      variant="contained"
+                      color="primary"
+                      className={classes.submit}
+                      disabled={isLoading}
+                    >
+                      Sign In
+                    </Button>
+                    {isLoading && <CircularProgress size={24} className={classes.buttonProgress}/>}
+                  </div>
+                  <Grid container>
+                    <Grid item xs>
+                      <Link href="#" variant="body2">
+                        Forgot password?
+                      </Link>
+                    </Grid>
+                    <Grid item>
+                      <Link href="#" variant="body2">
+                        {'Don\'t have an account? Sign Up'}
+                      </Link>
+                    </Grid>
+                  </Grid>
+                </form>
+              )
+            }
+          </Formik>
         </div>
         <Box mt={8}>
           <Copyright/>
@@ -180,9 +206,4 @@ const mapStateToProps = ({ user }) => {
     user,
   }
 }
-
-// const mapDispatchToProps = dispatch => ({
-//   postUser: (formData) => dispatch(postUser(formData)),
-// })
-
 export default compose(withStyles(useStyles), connect(mapStateToProps))(SignIn)

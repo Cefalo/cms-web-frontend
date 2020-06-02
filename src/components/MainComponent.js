@@ -1,24 +1,30 @@
-import React, { Component } from 'react';
-import { Switch, Route, Redirect, withRouter } from 'react-router-dom';
+import React, { Component } from 'react'
+import { Switch, Route, Redirect, withRouter } from 'react-router-dom'
 /* Custom components */
-import SignIn from './SignIn';
-
-
+import SignIn from './SignIn'
+import Home from './Home'
+import { connect } from 'react-redux'
+import { compose } from 'redux'
 
 class Main extends Component {
 
-  render() {
-
+  render () {
+    const {token, history} = this.props
     return (
       <React.Fragment>
         <Switch location={this.props.location}>
-					<Route exact path='/signin' component={() => <SignIn/>} />
-          <Redirect to="/signin" />
+          <Route exact path='/signin' component={() => <SignIn history={history}/>}/>
+          <Route path={'/home'} component={Home}/>
         </Switch>
       </React.Fragment>
-    );
+    )
   }
 
 }
 
-export default withRouter(Main);
+function mapStateToProps ({user}) {
+  return{
+    token: user.jwt_tocken
+  }
+}
+export default compose(withRouter, connect(mapStateToProps))(Main)
